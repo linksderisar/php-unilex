@@ -11,6 +11,8 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    env:
+      COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -20,6 +22,7 @@ jobs:
           - "8.1"
           - "8.2"
           - "8.3"
+          - "8.4"
         dependencies:
           - lowest
           - highest
@@ -35,6 +38,30 @@ jobs:
 
       - name: Install PHIVE
         uses: szepeviktor/phive@v1
+        with:
+          binPath: "${{ github.workspace }}/tools/phar/phive"
+
+      - name: Cache Phive tools
+        id: cache-phive
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.phive
+            ${{ github.workspace }}/tools
+          key: phive-${{ runner.os }}-${{ hashFiles('.phive/phars.xml') }}
+          restore-keys: |
+            phive-${{ runner.os }}-
+
+      - name: Install PHAR tools with PHIVE
+        if: steps.cache-phive.outputs.cache-hit != 'true'
+        env:
+          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ${{ github.workspace }}/tools/phar/phive install --trust-gpg-keys C5095986493B4AA0
+
+      - name: Force HTTPS for php-int-rangesets and ucd only
+        run: |
+          git config --global url."https://github.com/Oryss/php-int-rangesets".insteadOf "git@github.com:Oryss/php-int-rangesets"
+          git config --global url."https://github.com/Oryss/php-ucd".insteadOf "git@github.com:Oryss/php-ucd"
 
       - name: Install lowest dependencies
         if: ${{ matrix.dependencies == 'lowest' && matrix.platform-reqs == 'use-platform-reqs' }}
@@ -59,9 +86,10 @@ jobs:
         run: composer test
 
       - name: Run infection
-        run: composer infection
         env:
-          INFECTION_DASHBOARD_API_KEY: ${{ secrets.INFECTION_DASHBOARD_API_KEY }}
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+        if: ${{ env.STRYKER_DASHBOARD_API_KEY }}
+        run: composer infection
 
       - name: Upload coverage to Codecov.io
         run: bash <(curl -s https://codecov.io/bash -s "build/logs")

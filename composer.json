@@ -20,17 +20,27 @@
   "bin": [
     "bin/unilex"
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/Oryss/php-ucd"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/Oryss/php-int-rangesets"
+    }
+  ],
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
     "phpdocumentor/reflection-docblock": "^4.3 || ^5",
     "nikic/php-parser": "^4.12 || ^5",
-    "remorhaz/int-rangesets": "^0.3",
-    "remorhaz/ucd": "^0.3",
+    "remorhaz/int-rangesets": "dev-master",
+    "remorhaz/ucd": "dev-master",
     "symfony/console": "^6.1 || ^7",
-    "thecodingmachine/safe": "^1.3.1 || ^2"
+    "thecodingmachine/safe": "v3.3.0"
   },
   "require-dev": {
-    "bamarni/composer-bin-plugin": "^1.8",
+    "bamarni/composer-bin-plugin": "^1.8.2",
     "phpunit/phpunit": "^10.1 || ^11"
   },
   "autoload": {
@@ -48,11 +58,8 @@
     }
   },
   "scripts": {
-    "post-update-cmd": ["@phive-install"],
-    "post-install-cmd": ["@phive-install"],
-    "phive-install": [
-      "`if [ -f tools/phive ]; then echo 'tools/'; fi`phive install --trust-gpg-keys C5095986493B4AA0"
-    ],
+    "post-update-cmd": [],
+    "post-install-cmd": [],
     "build-example-brainfuck": [
       "php bin/unilex build-token-matcher examples/Brainfuck/spec/LexerSpec.php examples/Brainfuck/src/Grammar/TokenMatcher.php --desc='Brainfuck token matcher.'",
       "php bin/unilex build-lookup-table examples/Brainfuck/src/Grammar/Config.php examples/Brainfuck/src/Grammar/LookupTable.php --type=ll-1 --desc='Brainfuck LL(1) parser lookup table.' --symbol=Remorhaz\\\\UniLex\\\\Example\\\\Brainfuck\\\\Grammar\\\\SymbolType --token=Remorhaz\\\\UniLex\\\\Example\\\\Brainfuck\\\\Grammar\\\\TokenType",
